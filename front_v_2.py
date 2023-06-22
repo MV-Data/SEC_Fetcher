@@ -1,5 +1,4 @@
 import streamlit as st
-from sec_api import QueryApi
 import functions
 import requests
 import pandas as pd
