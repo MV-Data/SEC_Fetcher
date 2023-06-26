@@ -1,6 +1,7 @@
 import streamlit as st
 from sec_api import QueryApi
 import functions
+import shutil
 import requests
 import csv
 import pandas as pd
@@ -71,15 +72,22 @@ if selected_industry:
                     st.write("Ticker:", item['ticker'])
         # Obtener la ruta absoluta del archivo de script actual
         current_path = os.path.abspath(__file__)
-
         # Construir la ruta relativa al directorio de informes
         folder_path = os.path.join(os.path.dirname(current_path), "reports/01-01-2022 al 31-12-2022")
+        
+        ruta_descarga = r'C:/SEC/tickers_10K'
+
+        if not os.path.exists(ruta_descarga):
+            os.makedirs(ruta_descarga)
 
         if st.button("Descargar informes"):
             if selected_tickers:
                 progress_bar = st.progress(0)  # Barra de progreso inicializada en 0
                 status_text = st.empty()  # Espacio para el texto de estado
-                
+                descargas_exitosas = 0
+                total_tickers = len(selected_tickers)  # Total de tickers seleccionados
+                tickers_descargados = []
+            
                 for i, ticker_info in enumerate(selected_tickers, 1):
                     ticker = ticker_info.split('-')[0].strip()
                     file_path = os.path.join(folder_path, f"{ticker}.xlsx")
@@ -87,14 +95,25 @@ if selected_industry:
                     if os.path.isfile(file_path):
                         # Descargar el archivo
                         status_text.text(f"Descargando informe para el ticker {ticker}...")
-                        # Aquí puedes agregar el código para descargar el archivo a tu sistema local
+                        destino = os.path.join(ruta_descarga, f"{ticker}.xlsx")
+                        shutil.copy(file_path, destino)
                         
                         # Actualizar la barra de progreso
                         progress = i / len(selected_tickers)
                         progress_bar.progress(progress)
-                        
-                # Mostrar el mensaje de descarga finalizada
-                status_text.text(f"Descarga finalizada!\nArchivos descargados en: {folder_path}")
+                        descargas_exitosas += 1
+                        tickers_descargados.append(ticker)
+                    else: 
+                        status_text.text(f"Informe no encontrado para {ticker}!")
+
+                if descargas_exitosas  > 0:
+                    descargados_text = ", ".join(tickers_descargados)
+                    mensaje = f"{descargas_exitosas} de {total_tickers} tickers descargados en {ruta_descarga}: {descargados_text} "
+                    status_text.text(mensaje)
+                else:
+                    status_text.text("No se encontraron informes para los tickers seleccionados.")       
+               
+                
             else:
                 st.write("No se han seleccionado tickers")
 
