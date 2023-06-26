@@ -82,7 +82,7 @@ if selected_industry:
         repository = 'SEC_Fetcher'
         #path = "blob/master/reports/01-01-2022%20al%2031-12-2022"
         path = "reports/01-01-2022 al 31-12-2022"
-        access_token = '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'
+        access_token = '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'
 
         if st.button("Descargar informes"):
             if selected_tickers:
