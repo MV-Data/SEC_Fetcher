@@ -3,6 +3,7 @@ from sec_api import QueryApi
 import requests
 import functions
 import shutil
+import base64
 import requests
 import csv
 import pandas as pd
@@ -81,6 +82,11 @@ if selected_industry:
         if not os.path.exists(ruta_descarga):
             os.makedirs(ruta_descarga)
 
+        username = 'MV-Data'
+        repository = 'SEC_Fetcher'
+        path = "reports/01-01-2022 al 31-12-2022"
+        access_token = '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'
+
         if st.button("Descargar informes"):
             if selected_tickers:
                 progress_bar = st.progress(0)  # Barra de progreso inicializada en 0
@@ -92,19 +98,33 @@ if selected_industry:
                 for i, ticker_info in enumerate(selected_tickers, 1):
                     ticker = ticker_info.split('-')[0].strip()
                     #file_url = f"https://github.com/MV-Data/SEC_Fetcher/raw/master/reports/01-01-2022%20al%2031-12-2022/{ticker}.xlsx"
-                    file_path = os.path.join(folder_path, f"{ticker}.xlsx") #esto es para local
-                    
+                    #file_path = os.path.join(folder_path, f"{ticker}.xlsx") #esto es para local
+                    api_url = f"https://api.github.com/repos/{username}/{repository}/contents/{path}/{ticker}.xlsx"
+                    headers = {"Authorization": f"Bearer {access_token}"}
+                    response = requests.get(api_url, headers=headers)
+                    download_url = response.json()["download_url"]
+                    response = requests.get(download_url)
+                    file_path = os.path.join(folder_path, f"{ticker}.xlsx")
                     if os.path.isfile(file_path):
-                        # Descargar el archivo
                         status_text.text(f"Descargando informe para el ticker {ticker}...")
                         destino = os.path.join(ruta_descarga, f"{ticker}.xlsx")
-                        shutil.copy(file_path, destino)
-                        
-                        # Actualizar la barra de progreso
+                        with open(destino, "wb") as file:
+                            file.write(response.content)
                         progress = i / len(selected_tickers)
                         progress_bar.progress(progress)
                         descargas_exitosas += 1
                         tickers_descargados.append(ticker)
+                    #if os.path.isfile(file_path):
+                        # Descargar el archivo
+                        #status_text.text(f"Descargando informe para el ticker {ticker}...")
+                        #destino = os.path.join(ruta_descarga, f"{ticker}.xlsx")
+                        #shutil.copy(file_path, destino)
+                        
+                        # Actualizar la barra de progreso
+                        #progress = i / len(selected_tickers)
+                        #progress_bar.progress(progress)
+                        #descargas_exitosas += 1
+                        #tickers_descargados.append(ticker)
                     else: 
                         status_text.text(f"Informe no encontrado para {ticker}!")
 
