@@ -102,29 +102,27 @@ if selected_industry:
                     api_url = f"https://api.github.com/repos/{username}/{repository}/contents/{path}/{ticker}.xlsx"
                     headers = {"Authorization": f"Bearer {access_token}"}
                     response = requests.get(api_url, headers=headers)
-                    download_url = response.json()["download_url"]
-                    response = requests.get(download_url)
-                    file_path = os.path.join(folder_path, f"{ticker}.xlsx")
-                    if os.path.isfile(file_path):
-                        status_text.text(f"Descargando informe para el ticker {ticker}...")
-                        destino = os.path.join(ruta_descarga, f"{ticker}.xlsx")
-                        with open(destino, "wb") as file:
-                            file.write(response.content)
-                        progress = i / len(selected_tickers)
-                        progress_bar.progress(progress)
-                        descargas_exitosas += 1
-                        tickers_descargados.append(ticker)
-                    #if os.path.isfile(file_path):
-                        # Descargar el archivo
-                        #status_text.text(f"Descargando informe para el ticker {ticker}...")
-                        #destino = os.path.join(ruta_descarga, f"{ticker}.xlsx")
-                        #shutil.copy(file_path, destino)
-                        
-                        # Actualizar la barra de progreso
-                        #progress = i / len(selected_tickers)
-                        #progress_bar.progress(progress)
-                        #descargas_exitosas += 1
-                        #tickers_descargados.append(ticker)
+
+                    if response.status_code == 200:
+                        download_url = response.json().get("download_url")
+
+                        if download_url:
+                            response = requests.get(download_url)
+
+                            if response.status_code == 200:
+                                status_text.text(f"Descargando informe para el ticker {ticker}...")
+                                destino = os.path.join(ruta_descarga, f"{ticker}.xlsx")
+
+                                with open(destino, "wb") as file:
+                                    file.write(response.content)
+
+                                progress = i / len(selected_tickers)
+                                progress_bar.progress(progress)
+                                descargas_exitosas += 1
+                                tickers_descargados.append(ticker)
+                            else:
+                                status_text.text(f"Error al descargar informe para el ticker {ticker}!")
+
                     else: 
                         status_text.text(f"Informe no encontrado para {ticker}!")
 
