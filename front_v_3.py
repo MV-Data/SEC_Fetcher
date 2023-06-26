@@ -1,5 +1,6 @@
 import streamlit as st
 from sec_api import QueryApi
+import requests
 import functions
 import shutil
 import requests
@@ -90,7 +91,8 @@ if selected_industry:
             
                 for i, ticker_info in enumerate(selected_tickers, 1):
                     ticker = ticker_info.split('-')[0].strip()
-                    file_path = os.path.join(folder_path, f"{ticker}.xlsx")
+                    #file_url = f"https://github.com/MV-Data/SEC_Fetcher/raw/master/reports/01-01-2022%20al%2031-12-2022/{ticker}.xlsx"
+                    file_path = os.path.join(folder_path, f"{ticker}.xlsx") #esto es para local
                     
                     if os.path.isfile(file_path):
                         # Descargar el archivo
