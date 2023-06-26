@@ -72,10 +72,6 @@ if selected_industry:
                 if item['ticker'] in selected_tickers:
                     st.write("Name:", item['name'])
                     st.write("Ticker:", item['ticker'])
-        # Obtener la ruta absoluta del archivo de script actual
-        current_path = os.path.abspath(__file__)
-        # Construir la ruta relativa al directorio de informes
-        folder_path = os.path.join(os.path.dirname(current_path), "reports/01-01-2022 al 31-12-2022")
         
         ruta_descarga = r'C:/SEC/tickers_10K'
 
@@ -84,6 +80,7 @@ if selected_industry:
 
         username = 'MV-Data'
         repository = 'SEC_Fetcher'
+        #path = "blob/master/reports/01-01-2022%20al%2031-12-2022"
         path = "reports/01-01-2022 al 31-12-2022"
         access_token = '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'
 
@@ -97,8 +94,6 @@ if selected_industry:
             
                 for i, ticker_info in enumerate(selected_tickers, 1):
                     ticker = ticker_info.split('-')[0].strip()
-                    #file_url = f"https://github.com/MV-Data/SEC_Fetcher/raw/master/reports/01-01-2022%20al%2031-12-2022/{ticker}.xlsx"
-                    #file_path = os.path.join(folder_path, f"{ticker}.xlsx") #esto es para local
                     api_url = f"https://api.github.com/repos/{username}/{repository}/contents/{path}/{ticker}.xlsx"
                     headers = {"Authorization": f"Bearer {access_token}"}
                     response = requests.get(api_url, headers=headers)
@@ -122,7 +117,6 @@ if selected_industry:
                                 tickers_descargados.append(ticker)
                             else:
                                 status_text.text(f"Error al descargar informe para el ticker {ticker}!")
-
                     else: 
                         status_text.text(f"Informe no encontrado para {ticker}!")
 
@@ -131,13 +125,9 @@ if selected_industry:
                     mensaje = f"{descargas_exitosas} de {total_tickers} tickers descargados en {ruta_descarga}: {descargados_text} "
                     status_text.text(mensaje)
                 else:
-                    status_text.text("No se encontraron informes para los tickers seleccionados.")       
-               
-                
+                    status_text.text("No se encontraron informes para los tickers seleccionados.")                      
             else:
-                st.write("No se han seleccionado tickers")
-
-            
+                st.write("No se han seleccionado tickers")    
     else:
         st.write("No tickers found for the selected industry")
 else:
