@@ -4,6 +4,7 @@ import functions
 import base64
 import csv
 import pandas as pd
+from config.definitions import ROOT_DIR
 import os
 
 
@@ -90,7 +91,8 @@ if selected_industry:
                 
                 for i, ticker_info in enumerate(selected_tickers, 1):
                     ticker = ticker_info.split('-')[0].strip()
-                    file_path =  f"{ticker}.xlsx"
+                    file_path =  os.path.join(ROOT_DIR,'reports',
+                                             '01-01-2022 al 31-12-2022' ,f"{ticker}.xlsx")
                     
                     if file_path:
                         try:
