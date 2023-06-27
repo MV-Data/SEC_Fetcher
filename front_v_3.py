@@ -2,6 +2,7 @@ import streamlit as st
 from sec_api import QueryApi
 import functions
 import shutil
+import base64
 import requests
 import csv
 import pandas as pd
@@ -94,10 +95,17 @@ if selected_industry:
                     
                     if file_path:
                         # Descargar el archivo
+                        with open(file_path, "rb") as file:
+                            file_content = file.read()
+
+                        # Convertir el archivo en base64
+                        b64 = base64.b64encode(file_content).decode()
+
+                        # Generar el enlace de descarga
+                        href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{ticker}.xlsx">Descargar informe para {ticker}</a>'
                         status_text.text(f"Descargando informe para el ticker {ticker}...")
-                        destino = os.path.join(ruta_descarga, f"{ticker}.xlsx")
-                        shutil.copy(file_path, destino)
-                        
+                        # Mostrar el enlace en la aplicación
+                        st.markdown(href, unsafe_allow_html=True)   
                         # Actualizar la barra de progreso
                         progress = i / len(selected_tickers)
                         progress_bar.progress(progress)
