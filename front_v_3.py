@@ -94,23 +94,26 @@ if selected_industry:
                     file_path =  f"{ticker}.xlsx"
                     
                     if file_path:
+                        try:
                         # Descargar el archivo
-                        with open(file_path, "rb") as file:
-                            file_content = file.read()
+                            with open(file_path, "rb") as file:
+                                file_content = file.read()
 
-                        # Convertir el archivo en base64
-                        b64 = base64.b64encode(file_content).decode()
+                            # Convertir el archivo en base64
+                            b64 = base64.b64encode(file_content).decode()
 
-                        # Generar el enlace de descarga
-                        href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{ticker}.xlsx">Descargar informe para {ticker}</a>'
-                        status_text.text(f"Descargando informe para el ticker {ticker}...")
-                        # Mostrar el enlace en la aplicación
-                        st.markdown(href, unsafe_allow_html=True)   
-                        # Actualizar la barra de progreso
-                        progress = i / len(selected_tickers)
-                        progress_bar.progress(progress)
-                        descargas_exitosas += 1
-                        tickers_descargados.append(ticker)
+                            # Generar el enlace de descarga
+                            href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{ticker}.xlsx">Descargar informe para {ticker}</a>'
+                            status_text.text(f"Descargando informe para el ticker {ticker}...")
+                            # Mostrar el enlace en la aplicación
+                            st.markdown(href, unsafe_allow_html=True)   
+                            # Actualizar la barra de progreso
+                            progress = i / len(selected_tickers)
+                            progress_bar.progress(progress)
+                            descargas_exitosas += 1
+                            tickers_descargados.append(ticker)
+                        except FileNotFoundError:
+                            status_text.text(f"No se encontró reporte para el ticker {ticker}!")
                     else: 
                         status_text.text(f"Informe no encontrado para {ticker}!")
 
