@@ -1,9 +1,7 @@
 import streamlit as st
 from sec_api import QueryApi
-import requests
 import functions
 import shutil
-import base64
 import requests
 import csv
 import pandas as pd
@@ -72,17 +70,15 @@ if selected_industry:
                 if item['ticker'] in selected_tickers:
                     st.write("Name:", item['name'])
                     st.write("Ticker:", item['ticker'])
+        # Obtener la ruta absoluta del archivo de script actual
+        current_path = os.path.abspath(__file__)
+        # Construir la ruta relativa al directorio de informes
+        folder_path = os.path.join(os.path.dirname(current_path), "reports/01-01-2022 al 31-12-2022")
         
         ruta_descarga = r'C:/SEC/tickers_10K'
 
         if not os.path.exists(ruta_descarga):
             os.makedirs(ruta_descarga)
-
-        username = 'MV-Data'
-        repository = 'SEC_Fetcher'
-        #path = "blob/master/reports/01-01-2022%20al%2031-12-2022"
-        path = "reports/01-01-2022 al 31-12-2022"
-        access_token = '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'
 
         if st.button("Descargar informes"):
             if selected_tickers:
@@ -94,29 +90,19 @@ if selected_industry:
             
                 for i, ticker_info in enumerate(selected_tickers, 1):
                     ticker = ticker_info.split('-')[0].strip()
-                    api_url = f"https://api.github.com/repos/{username}/{repository}/contents/{path}/{ticker}.xlsx"
-                    headers = {"Authorization": f"Bearer {access_token}"}
-                    response = requests.get(api_url, headers=headers)
-
-                    if response.status_code == 200:
-                        download_url = response.json().get("download_url")
-
-                        if download_url:
-                            response = requests.get(download_url)
-
-                            if response.status_code == 200:
-                                status_text.text(f"Descargando informe para el ticker {ticker}...")
-                                destino = os.path.join(ruta_descarga, f"{ticker}.xlsx")
-
-                                with open(destino, "wb") as file:
-                                    file.write(response.content)
-
-                                progress = i / len(selected_tickers)
-                                progress_bar.progress(progress)
-                                descargas_exitosas += 1
-                                tickers_descargados.append(ticker)
-                            else:
-                                status_text.text(f"Error al descargar informe para el ticker {ticker}!")
+                    file_path =  f"{ticker}.xlsx"
+                    
+                    if file_path:
+                        # Descargar el archivo
+                        status_text.text(f"Descargando informe para el ticker {ticker}...")
+                        destino = os.path.join(ruta_descarga, f"{ticker}.xlsx")
+                        shutil.copy(file_path, destino)
+                        
+                        # Actualizar la barra de progreso
+                        progress = i / len(selected_tickers)
+                        progress_bar.progress(progress)
+                        descargas_exitosas += 1
+                        tickers_descargados.append(ticker)
                     else: 
                         status_text.text(f"Informe no encontrado para {ticker}!")
 
@@ -125,9 +111,13 @@ if selected_industry:
                     mensaje = f"{descargas_exitosas} de {total_tickers} tickers descargados en {ruta_descarga}: {descargados_text} "
                     status_text.text(mensaje)
                 else:
-                    status_text.text("No se encontraron informes para los tickers seleccionados.")                      
+                    status_text.text("No se encontraron informes para los tickers seleccionados.")       
+               
+                
             else:
-                st.write("No se han seleccionado tickers")    
+                st.write("No se han seleccionado tickers")
+
+            
     else:
         st.write("No tickers found for the selected industry")
 else:
