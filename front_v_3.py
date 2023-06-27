@@ -1,9 +1,7 @@
 import streamlit as st
 from sec_api import QueryApi
 import functions
-import shutil
 import base64
-import requests
 import csv
 import pandas as pd
 import os
@@ -88,7 +86,8 @@ if selected_industry:
                 descargas_exitosas = 0
                 total_tickers = len(selected_tickers)  # Total de tickers seleccionados
                 tickers_descargados = []
-            
+
+                
                 for i, ticker_info in enumerate(selected_tickers, 1):
                     ticker = ticker_info.split('-')[0].strip()
                     file_path =  f"{ticker}.xlsx"
@@ -119,7 +118,7 @@ if selected_industry:
 
                 if descargas_exitosas  > 0:
                     descargados_text = ", ".join(tickers_descargados)
-                    mensaje = f"{descargas_exitosas} de {total_tickers} tickers descargados en {ruta_descarga}: {descargados_text} "
+                    mensaje = f"{descargas_exitosas} de {total_tickers} tickers encontrados: {descargados_text} "
                     status_text.text(mensaje)
                 else:
                     status_text.text("No se encontraron informes para los tickers seleccionados.")       
