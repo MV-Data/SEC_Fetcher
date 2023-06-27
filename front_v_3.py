@@ -7,10 +7,8 @@ import pandas as pd
 from config.definitions import ROOT_DIR
 import os
 
-
-
 # Cargar la lista de industrias desde un archivo CSV
-listado_industrias = 'industry_list.csv' 
+listado_industrias = 'industry_list.csv'
 industrias = functions.read_industry_list(listado_industrias)
 
 archivo_csv = 'tickers_list.csv'
@@ -21,7 +19,6 @@ with open(archivo_csv, 'r', encoding='utf-8-sig') as file:
     reader = csv.DictReader(file)
     for row in reader:
         listado_tickers.append(dict(row))
-
 
 # Crear un estado de sesión para almacenar las selecciones
 session_state = st.session_state
@@ -35,6 +32,11 @@ if 'selected_tickers' not in session_state:
 st.title("SEC 10-K FinancialReportFetcher")
 st.subheader("Extract key financial data with a single click")
 
+# Dividir la pantalla en dos columnas
+col1, col2 = st.columns(2)
+
+
+
 # Selección de industria
 selected_industry = session_state.selected_industry
 
@@ -45,17 +47,13 @@ if selected_industry:
     st.write("Selected industry:", selected_industry)
 
     if listado_tickers:
-        ticker_names = [f"{item['ticker']} - {item['name']}" for item in listado_tickers]
-        ticker_names.insert(0, "Select All")
-        selected_tickers = st.multiselect("Select tickers",ticker_names,
-            default=[
-            item
-            for item in session_state.selected_tickers
-            if item in ticker_names],
-            key="tickers_multiselect")
-        
         selected_industry_tickers = [item['ticker'] for item in listado_tickers if item['industry'] == selected_industry]
-        
+        ticker_names = [f"{item['ticker']} - {item['name']}" for item in listado_tickers if item['ticker'] in selected_industry_tickers]
+        ticker_names.insert(0, "Select All")
+        selected_tickers = st.multiselect("Select tickers", ticker_names,
+                                        default=[item for item in session_state.selected_tickers if item in ticker_names],
+                                        key="tickers_multiselect")
+
         if "Select All" in selected_tickers:
             selected_tickers = selected_industry_tickers
 
@@ -66,15 +64,23 @@ if selected_industry:
             st.write("You have selected all tickers for the industry", selected_industry)
             st.write("Total tickers:", len(selected_industry_tickers))
         else:
+            #st.write("You have selected the following tickers for the industry", selected_industry,":", selected_tickers)
+            if selected_tickers:
+                st.write("You have selected the following tickers for the industry", selected_industry, ":")
+                st.write(", ".join(selected_tickers))
+            else:
+                st.write("No tickers selected")
+
             for item in listado_tickers:
                 if item['ticker'] in selected_tickers:
                     st.write("Name:", item['name'])
                     st.write("Ticker:", item['ticker'])
+
         # Obtener la ruta absoluta del archivo de script actual
         current_path = os.path.abspath(__file__)
         # Construir la ruta relativa al directorio de informes
         folder_path = os.path.join(os.path.dirname(current_path), "reports/01-01-2022 al 31-12-2022")
-        
+
         ruta_descarga = r'C:/SEC/tickers_10K'
 
         if not os.path.exists(ruta_descarga):
@@ -88,11 +94,9 @@ if selected_industry:
                 total_tickers = len(selected_tickers)  # Total de tickers seleccionados
                 tickers_descargados = []
 
-                
                 for i, ticker_info in enumerate(selected_tickers, 1):
                     ticker = ticker_info.split('-')[0].strip()
-                    file_path =  os.path.join(ROOT_DIR,'reports',
-                                             '01-01-2022 al 31-12-2022' ,f"{ticker}.xlsx")
+                    file_path = os.path.join(ROOT_DIR, 'reports', '01-01-2022 al 31-12-2022', f"{ticker}.xlsx")
                     
                     if file_path:
                         try:
@@ -124,7 +128,7 @@ if selected_industry:
                     status_text.text(mensaje)
                 else:
                     status_text.text("No se encontraron informes para los tickers seleccionados.")       
-               
+            
                 
             else:
                 st.write("No se han seleccionado tickers")
