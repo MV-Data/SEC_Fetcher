@@ -1,11 +1,9 @@
 import streamlit as st
 from sec_api import QueryApi
 import functions
-from datetime import datetime
 import base64
 import csv
 import pandas as pd
-import zipfile
 from config.definitions import ROOT_DIR
 import os
 
@@ -96,43 +94,42 @@ if selected_industry:
                 total_tickers = len(selected_tickers)  # Total de tickers seleccionados
                 tickers_descargados = []
 
-                # Crear un archivo ZIP
-                zip_file_path = os.path.join(ROOT_DIR, 'reports', '01-01-2022 al 31-12-2022', 'informes.zip')
-                with zipfile.ZipFile(zip_file_path, 'w') as zip_file:
-                    descargas_exitosas = 0
-                    tickers_descargados = []
+                for i, ticker_info in enumerate(selected_tickers, 1):
+                    ticker = ticker_info.split('-')[0].strip()
+                    file_path = os.path.join(ROOT_DIR, 'reports', '01-01-2022 al 31-12-2022', f"{ticker}.xlsx")
+                    
+                    if file_path:
+                        try:
+                        # Descargar el archivo
+                            with open(file_path, "rb") as file:
+                                file_content = file.read()
 
-                    for i, ticker_info in enumerate(selected_tickers, 1):
-                        ticker = ticker_info.split('-')[0].strip()
-                        file_path = os.path.join(ROOT_DIR, 'reports', '01-01-2022 al 31-12-2022', f"{ticker}.xlsx")
-                        if os.path.exists(file_path):
-                            zip_file.write(file_path, f"{ticker}.xlsx")
+                            # Convertir el archivo en base64
+                            b64 = base64.b64encode(file_content).decode()
+
+                            # Generar el enlace de descarga
+                            href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{ticker}.xlsx">Descargar informe para {ticker}</a>'
+                            status_text.text(f"Descargando informe para el ticker {ticker}...")
+                            # Mostrar el enlace en la aplicación
+                            st.markdown(href, unsafe_allow_html=True)   
+                            # Actualizar la barra de progreso
+                            progress = i / len(selected_tickers)
+                            progress_bar.progress(progress)
                             descargas_exitosas += 1
                             tickers_descargados.append(ticker)
+                        except FileNotFoundError:
+                            status_text.text(f"No se encontró reporte para el ticker {ticker}!")
+                    else: 
+                        status_text.text(f"Informe no encontrado para {ticker}!")
 
-                        # Actualizar la barra de progreso
-                        progress = i / len(selected_tickers)
-                        progress_bar.progress(progress)
-                        
-
-                if descargas_exitosas > 0:
+                if descargas_exitosas  > 0:
                     descargados_text = ", ".join(tickers_descargados)
                     mensaje = f"{descargas_exitosas} de {total_tickers} tickers encontrados: {descargados_text} "
                     status_text.text(mensaje)
                 else:
-                    status_text.text("No se encontraron informes para los tickers seleccionados.")
-
-                # Convertir el archivo ZIP en base64
-                with open(zip_file_path, 'rb') as zip_file:
-                    zip_content = zip_file.read()
-                zip_b64 = base64.b64encode(zip_content).decode()
-
-                # Generar el enlace de descarga del archivo ZIP
-                download_link = f'<a href="data:application/zip;base64,{zip_b64}" download="informes_{datetime.now().strftime("%Y%m%d%H%M%S")}.zip">Descargar informes</a>'
-
-                # Mostrar el enlace en la aplicación
-                st.markdown(download_link, unsafe_allow_html=True)
-
+                    status_text.text("No se encontraron informes para los tickers seleccionados.")       
+            
+                
             else:
                 st.write("No se han seleccionado tickers")
 
